@@ -16,9 +16,6 @@
 	function isArray(it){
 		return as.call(it) === '[object Array]';
 	}
-	function script(){
-		return document.getElementsByTagName("script");
-	}
 	/**
 	 * 正向迭代一个数组，如果回调函数返回true就中断循环
 	 * @param  {[type]}   arr [数组]
@@ -26,7 +23,7 @@
 	 */
 	function each(arr,fn){
 		for(var i=0; i<arr.length-1; i++){
-			if(fn(arr[i],i,arr)){
+			if(fn(arr,i)){
 				break;
 			}
 		}
@@ -39,12 +36,27 @@
 	 */
 	function eachReverse(arr,fn){
 		for(var i=arr.length-1;i>-1;i--){
-			if(fn(arr[i],i,arr)){
+			if(fn(arr,i)){
 				break;
 			}
 		}
 	}
 
+	/**
+	 * 正向迭代一个对象,如果回调函数返回true就中断循环
+	 * @param  {[type]}   obj [对象]
+	 * @param  {Function} fn  [回调函数]
+	 */
+	function eachProp(obj,fn){
+		for(var i in obj){
+			//用hasOwnProPerty防止遍历obj继承的属性或方法
+			if(obj.hasOwnProPerty(i)){
+				if(fn(obj,i)){
+					break;
+				}
+			}
+		}
+	}
 	/**
 	 * 数组化(将类数组转化为数组)
 	 */
@@ -96,6 +108,8 @@
 		var head = document.getElementsByTagName("head")[0];
 		var node = document.createElement("script");
 		node.type = "text/javascript";
+		node.charset = "utf-8";
+		node.async = true;
 		node.src = url;
 		head.appendChild(node);
 		if(callback){
@@ -107,17 +121,19 @@
 	 * 通过获取data-main的属性值，加载入口js文件
 	 * @type {[type]}
 	 */
-	var scriptss = document.getElementsByTagName("script");
-	for(var i=0;i<scriptss.length; i++){
-		var mainscript = scriptss[i].getAttribute('data-main');
-		if(mainscript){
-			var re = /.js/g;
-			if(!re.test(mainscript)){
-				mainscript += ".js";
+	 (function(){
+	 	var scripts = document.getElementsByTagName("script");
+		each(scripts,function(script,i){
+			mainscript = script[i].getAttribute('data-main');
+			if(mainscript){
+				var re = /.js/g;
+				if(!re.test(mainscript)){
+					mainscript += ".js";
+				}
+				loadJs(mainscript);
 			}
-			loadJs(mainscript);
-		}
-	}
+		})
+	 })();
 
 	window.require = function(list,factory){
 		
