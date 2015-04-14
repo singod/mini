@@ -4,7 +4,8 @@
 		os = op.toString,
 		ap = Array.prototype,
 		as = ap.toString,
-		moduleMap = {};
+		moduleMap = {},//保存模块
+		cfg = {};//保存基本设置
 
 	/**
 	 * 类型判断
@@ -118,7 +119,7 @@
 	}
 
 	/**
-	 * 通过获取data-main的属性值，加载入口js文件
+	 * 通过获取data-main的属性值，设置baseUrl和加载入口js文件
 	 * @type {[type]}
 	 */
 	 (function(){
@@ -126,13 +127,14 @@
 		each(scripts,function(script,i){
 			mainscript = script[i].getAttribute('data-main');
 			if(mainscript){
-				var re = /.js/g;
-				if(!re.test(mainscript)){
-					mainscript += ".js";
-				}
-				loadJs(mainscript);
+				//将路径保存于cfg.baseUrl中
+				var src = mainscript.split("/");
+				mainscript = src.pop();
+				var subPath = src.length ? src.join("/") + "/" : "./";
+				cfg.baseUrl = subPath;
+				return true; //退出迭代
 			}
-		})
+		});
 	 })();
 
 	window.require = function(list,factory){
