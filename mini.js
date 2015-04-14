@@ -4,8 +4,9 @@
 		os = op.toString,
 		ap = Array.prototype,
 		as = ap.toString,
-		moduleMap = {},//保存模块
-		cfg = {};//保存基本设置
+		moduleMap = {},
+		noop = function(){},
+		baseUrl;
 
 	/**
 	 * 类型判断
@@ -126,6 +127,7 @@
 	 	var scripts = document.getElementsByTagName("script");
 		each(scripts,function(script,i){
 			mainscript = script[i].getAttribute('data-main');
+			
 			if(mainscript){
 				//将路径保存于cfg.baseUrl中
 				var src = mainscript.split("/");
@@ -134,13 +136,41 @@
 				cfg.baseUrl = subPath;
 				return true; //退出迭代
 			}
-		});
+		})
 	 })();
 
+	 function use(name){
+	 	var module = moduleMap[name];
+
+	    if (!module.entity) {
+	        var args = [];
+	        for (var i=0; i<module.deps.length; i++) {
+	            if (moduleMap[module.deps[i]].entity) {
+	                args.push(moduleMap[module.deps[i]].entity);
+	            }
+	            else {
+	                args.push(this.require(module.deps[i]));
+	            }
+	        }
+
+	        module.entity = module.factory.apply(noop, args);
+	        console.log(moduleMap);
+	    }
+	    return module.entity;
+	}
 	window.require = function(list,factory){
+		each(list,function(arr,i){
+			var requireUrl = baseUrl + arr[i];
+			loadJs(requireUrl);
+		})
 		
 	}
 
+	require.config = function(obj){
+		if(obj.baseUrl){
+			baseUrl = obj.baseUrl;
+		}
+	}
 	window.define = function(name,deps,factory){
 		var module = {
 			name : name,
@@ -148,7 +178,6 @@
 			factory : factory
 		}
 		moduleMap[name] = module;
-		return module[name];
 	}
 
 }(this);
