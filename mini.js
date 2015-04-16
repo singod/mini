@@ -4,9 +4,9 @@
 		os = op.toString,
 		ap = Array.prototype,
 		as = ap.toString,
-		moduleMap = {},
+		moduleMap = {}, //保存定义模块
 		noop = function(){},
-		baseUrl;
+		cfg; //保存基本设置
 
 	/**
 	 * 类型判断
@@ -106,14 +106,20 @@
 		return src;
 	}
 
+	function getUrl(url){
+		url = cfg.baseUrl + url;
+		return url;
+	}
+
 	function loadJs(url,callback){
 		var head = document.getElementsByTagName("head")[0];
 		var node = document.createElement("script");
 		node.type = "text/javascript";
 		node.charset = "utf-8";
 		node.async = true;
-		node.src = url;
+		node.src = getUrl(url);
 		head.appendChild(node);
+
 		if(callback){
 			callback();
 		}
@@ -124,7 +130,9 @@
 	 * @type {[type]}
 	 */
 	 (function(){
-	 	var scripts = document.getElementsByTagName("script");
+	 	var scripts = document.getElementsByTagName("script"),
+	 		mainscript;
+
 		each(scripts,function(script,i){
 			mainscript = script[i].getAttribute('data-main');
 			
@@ -136,7 +144,9 @@
 				cfg.baseUrl = subPath;
 				return true; //退出迭代
 			}
-		})
+		});
+
+		loadJs(getUrl(mainscript));//加载入口js文件
 	 })();
 
 	 function use(name){
@@ -154,23 +164,22 @@
 	        }
 
 	        module.entity = module.factory.apply(noop, args);
-	        console.log(moduleMap);
 	    }
 	    return module.entity;
 	}
 	window.require = function(list,factory){
-		each(list,function(arr,i){
-			var requireUrl = baseUrl + arr[i];
-			loadJs(requireUrl);
+		String(list).replace(/[^, ]/g,function(m){
+			
 		})
 		
 	}
 
 	require.config = function(obj){
 		if(obj.baseUrl){
-			baseUrl = obj.baseUrl;
+			cfg.baseUrl = obj.baseUrl;
 		}
 	}
+
 	window.define = function(name,deps,factory){
 		var module = {
 			name : name,
