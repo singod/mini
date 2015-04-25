@@ -167,7 +167,7 @@
 	    }
 	    return module.entity;
 	}
-	window.require = function(list,factory){
+	global.require = function(list,factory){
 		String(list).replace(/[^, ]/g,function(m){
 			
 		})
@@ -180,7 +180,7 @@
 		}
 	}
 
-	window.define = function(name,deps,factory){
+	global.define = function(name,deps,factory){
 		var module = {
 			name : name,
 			deps : deps,
